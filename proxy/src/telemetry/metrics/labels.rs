@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fmt::{self, Write};
 use std::hash;
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use http;
@@ -85,6 +86,16 @@ enum Direction {
 pub struct DstLabels {
     formatted: Arc<str>,
     original: Arc<HashMap<String, String>>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+pub enum TlsConfigLabels {
+    Reloaded,
+    InvalidTrustAnchors,
+    InvalidPrivateKey,
+    InvalidEndEntityCert,
+    Io(PathBuf),
+    TimeConversion,
 }
 
 // ===== impl RequestLabels =====
@@ -384,6 +395,50 @@ impl fmt::Display for ctx::transport::TlsStatus {
             Conditional::None(tls::ReasonForNoTls::Disabled) |
             Conditional::None(tls::ReasonForNoTls::InternalTraffic) |
             Conditional::None(tls::ReasonForNoTls::NoIdentity(_)) => Ok(()),
+        }
+    }
+}
+
+// ===== impl TlsConfigLabels =====
+
+impl TlsConfigLabels {
+    pub fn success() -> Self {
+        TlsConfigLabels::Reloaded
+    }
+}
+
+impl From<tls::ConfigError> for TlsConfigLabels {
+    fn from(err: tls::ConfigError) -> Self {
+        match err {
+            tls::ConfigError::Io(path, _) =>
+                TlsConfigLabels::Io(path),
+            tls::ConfigError::FailedToParseTrustAnchors(_) =>
+                TlsConfigLabels::InvalidTrustAnchors,
+            tls::ConfigError::EndEntityCertIsNotValid(_) =>
+                TlsConfigLabels::InvalidEndEntityCert,
+            tls::ConfigError::InvalidPrivateKey =>
+                TlsConfigLabels::InvalidPrivateKey,
+            tls::ConfigError::TimeConversionFailed =>
+                TlsConfigLabels::TimeConversion,
+        }
+    }
+}
+
+impl fmt::Display for TlsConfigLabels {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            TlsConfigLabels::Reloaded =>
+                f.pad("status=\"reloaded\""),
+            TlsConfigLabels::Io(ref path) =>
+                write!(f, "status=\"io error\",path=\"{}\"", path.display()),
+            TlsConfigLabels::InvalidPrivateKey =>
+                f.pad("status=\"invalid private key\""),
+            TlsConfigLabels::InvalidEndEntityCert =>
+                f.pad("status=\"invalid end entity cert\""),
+            TlsConfigLabels::InvalidTrustAnchors =>
+                f.pad("status=\"invalid trust anchors\""),
+            TlsConfigLabels::TimeConversion =>
+                f.pad("status=\"time conversion failed\""),
         }
     }
 }
