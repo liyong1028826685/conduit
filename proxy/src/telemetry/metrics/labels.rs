@@ -97,7 +97,6 @@ pub enum TlsConfigLabels {
     InvalidPrivateKey,
     InvalidEndEntityCert,
     Io { path: PathBuf, error_code: Option<i32>, },
-    TimeConversion,
 }
 
 // ===== impl RequestLabels =====
@@ -420,8 +419,6 @@ impl From<tls::ConfigError> for TlsConfigLabels {
                 TlsConfigLabels::InvalidEndEntityCert,
             tls::ConfigError::InvalidPrivateKey =>
                 TlsConfigLabels::InvalidPrivateKey,
-            tls::ConfigError::TimeConversionFailed =>
-                TlsConfigLabels::TimeConversion,
         }
     }
 }
@@ -445,8 +442,6 @@ impl fmt::Display for TlsConfigLabels {
                 f.pad("status=\"invalid_end_entity_cert\""),
             TlsConfigLabels::InvalidTrustAnchors =>
                 f.pad("status=\"invalid_trust_anchors\""),
-            TlsConfigLabels::TimeConversion =>
-                f.pad("status=\"time_conversion_failed\""),
         }
     }
 }
