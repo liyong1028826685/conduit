@@ -25,7 +25,12 @@ pub fn connect(addr: &SocketAddr,
                tls: tls::ConditionalConnectionConfig<tls::ClientConfig>)
     -> Connecting
 {
+<<<<<<< HEAD
     let state = ConnectingState::Plaintext {
+=======
+    Connecting::Plaintext {
+        addr: *addr,
+>>>>>>> WIP first pass on fallback logic
         connect: TcpStream::connect(addr),
         tls: Some(tls),
     };
@@ -55,10 +60,14 @@ pub struct Connecting {
 
 enum ConnectingState {
     Plaintext {
+        addr: SocketAddr,
         connect: ConnectFuture,
         tls: Option<tls::ConditionalConnectionConfig<tls::ClientConfig>>
     },
-    UpgradeToTls(tls::UpgradeClientToTls),
+    UpgradeToTls {
+        addr: SocketAddr,
+        upgrading: tls::UpgradeClientToTls
+    },
 }
 
 /// Abstracts a plaintext socket vs. a TLS decorated one.
