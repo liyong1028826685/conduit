@@ -186,9 +186,6 @@ where
     where
         F: Future<Item = (), Error = ()> + Send + 'static,
     {
-        let (tls_client_config, tls_server_config, tls_cfg_bg) =
-            tls::watch_for_config_changes(self.config.tls_settings.as_ref());
-
         let process_ctx = ctx::Process::new(&self.config);
 
         let Main {
@@ -230,6 +227,12 @@ where
             config.metrics_retain_idle,
             &taps,
         );
+
+        let (tls_client_config, tls_server_config, tls_cfg_bg) =
+            tls::watch_for_config_changes(
+                config.tls_settings.as_ref(),
+                sensors.tls_config(),
+            );
 
         let controller_tls =
             Conditional::None(tls::ReasonForNoIdentity::NotImplementedForController.into()); // TODO
