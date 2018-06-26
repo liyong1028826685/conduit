@@ -338,7 +338,6 @@ impl Future for Connecting {
                             // from the failed upgrade future, so we have
                             // to try reconnecting.
                             let connect = TcpStream::connect(&self.addr);
-                            // TODO: emit a `HandshakeFailed` telemetry event.
                             let reason = tls::ReasonForNoTls::HandshakeFailed;
                             // Reset self to try the plaintext connection.
                             ConnectingState::Plaintext {
@@ -502,9 +501,6 @@ fn set_nodelay_or_warn(socket: &TcpStream) {
 
 impl<'a> From<&'a std::io::Error> for HandshakeError {
     fn from(err: &'a std::io::Error) -> Self {
-        // See if the error can be downcast first, so the
-        // IO error is only consumed by `into_inner` if we
-        // know it will succeed.
         if let Some(tls_error) = err
             .get_ref()
             .and_then(|err| err.downcast_ref::<tls::Error>())
