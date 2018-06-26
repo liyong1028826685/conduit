@@ -55,9 +55,6 @@ let applicationHtml = (
                 <Route
                   path={`${pathPrefix}/pods`}
                   render={() => <ResourceList resource="pod" />} />
-                <Route
-                  path={`${pathPrefix}/authorities`}
-                  render={() => <ResourceList resource="authority" />} />
                 <Route component={NoMatch} />
               </Switch>
             </div>

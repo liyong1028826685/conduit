@@ -10,16 +10,6 @@ import { metricsPropType, processSingleResourceRollup } from './util/MetricUtils
 import './../../css/list.css';
 import 'whatwg-fetch';
 
-const friendlyTitle = resource => {
-  let titles = { singluar: _.startCase(resource) };
-  if (resource === "authority") {
-    titles.plural = "Authorities";
-  } else {
-    titles.plural = titles.singluar + "s";
-  }
-  return titles;
-};
-
 export class ResourceListBase extends React.Component {
   static defaultProps = {
     error: null,
@@ -66,11 +56,13 @@ export class ResourceListBase extends React.Component {
   render() {
     const {loading, resource} = this.props;
 
+    const friendlyTitle = _.startCase(resource);
+
     return (
       <div className="page-content">
         <div>
           {this.banner()}
-          {loading ? null : <PageHeader header={friendlyTitle(resource).plural} />}
+          {loading ? null : <PageHeader header={`${friendlyTitle}s`} />}
           {this.content()}
         </div>
       </div>
