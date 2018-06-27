@@ -247,7 +247,6 @@ where
             control_host_and_port,
             controller_tls,
             &sensors,
-            &process_ctx,
         );
 
         let (drain_tx, drain_rx) = drain::channel();
@@ -433,7 +432,7 @@ where
 
     let tls = tls_config
         .map(|config| {
-            let sensor = sensors.tls_accept(listen_addr, proxy_ctx.clone());
+            let sensor = sensors.tls_accept(listen_addr, &proxy_ctx);
             connection::TlsAccept::new(config, sensor)
         });
     let server = Server::new(
